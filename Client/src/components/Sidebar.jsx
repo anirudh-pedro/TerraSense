@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import Icon from './Icon';
+import logo from '../assets/logo.png';
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
@@ -18,9 +19,7 @@ export default function Sidebar({ open, onNavigate }) {
   return (
     <aside className={`sidebar ${open ? 'open' : ''}`}>
       <div className="brand">
-        <div className="brand-mark">
-          <Icon name="mountain" size={22} strokeWidth={2} />
-        </div>
+        <img src={logo} alt="TerraSense Logo" className="brand-logo" />
         <div className="brand-text">
           <span className="brand-name">TerraSense NER</span>
           <span className="brand-sub">Early Warning System</span>
