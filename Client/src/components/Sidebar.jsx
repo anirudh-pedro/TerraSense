@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: 'dashboard', end: true },
   { to: '/risk-map', label: 'Risk Map', icon: 'map' },
-  { to: '/alerts', label: 'Alerts', icon: 'alert', badge: '9' },
+  { to: '/alerts', label: 'Alerts', icon: 'alert', badge: '10' },
   { to: '/incidents', label: 'Incident Reports', icon: 'clipboard' },
   { to: '/emergency', label: 'Emergency Response', icon: 'shield' },
 ];
