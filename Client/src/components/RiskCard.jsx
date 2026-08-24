@@ -16,12 +16,12 @@ function Sparkline({ data = [], color, width = 72, height = 26 }) {
     <svg className="kpi-spark" width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="0%" stopColor={color} stopOpacity="0.15" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
       <path d={area} fill={`url(#${gid})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+      <path d={line} fill="none" stroke={color} strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
@@ -34,7 +34,7 @@ export default function RiskCard({ label, value, note, icon, band = 'HIGH', delt
   return (
     <div
       className="risk-card fade-up"
-      style={{ '--band-color': b.color, '--band-soft': `${b.color}22` }}
+      style={{ '--band-color': b.color, '--band-soft': `${b.color}15` }}
     >
       <div className="risk-card-top">
         <span className="risk-card-label">{label}</span>

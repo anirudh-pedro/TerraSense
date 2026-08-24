@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip, LayersControl, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Circle, CircleMarker, Tooltip, Popup, LayersControl, useMap } from 'react-leaflet';
 import Icon from './Icon';
 import StatusPill from './StatusPill';
 import { RISK_BANDS, bandForScore, REGION_META } from '../data/mockData';
@@ -10,6 +10,28 @@ const LEGEND = [
   { band: RISK_BANDS.HIGH, label: 'High', range: '40–70%' },
   { band: RISK_BANDS.CRITICAL, label: 'Critical', range: '70–100%' },
 ];
+
+const STATE_COORDS = {
+  'Assam': [26.2006, 92.9376],
+  'Arunachal Pradesh': [28.2180, 94.7278],
+  'Manipur': [24.6637, 93.9063],
+  'Meghalaya': [25.4670, 91.3662],
+  'Mizoram': [23.1645, 92.9376],
+  'Nagaland': [26.1584, 94.5624],
+  'Sikkim': [27.5330, 88.5122],
+  'Tripura': [23.9408, 91.9882],
+  'All NER States': REGION_META.center
+};
+
+function MapEffect({ selectedState }) {
+  const map = useMap();
+  useEffect(() => {
+    const coords = STATE_COORDS[selectedState] || REGION_META.center;
+    const zoom = selectedState === 'All NER States' ? REGION_META.zoom : 7;
+    map.flyTo(coords, zoom, { duration: 1.5 });
+  }, [selectedState, map]);
+  return null;
+}
 
 // Keeps Leaflet correctly sized when the container is a flex child that
 // resolves its height after layout (fill mode) or when the viewport resizes.
@@ -44,8 +66,8 @@ export default function RiskMap({
   zoom = REGION_META.zoom,
   height = 560,
   fill = false,
+  selectedState = 'All NER States',
 }) {
-  const [selected, setSelected] = useState(null);
   const [show, setShow] = useState({ zones: true, incidents: true, infra: true });
 
   const toggle = (key) => setShow((s) => ({ ...s, [key]: !s[key] }));
@@ -58,26 +80,39 @@ export default function RiskMap({
         className="risk-map"
         scrollWheelZoom
         zoomControl
+        maxBounds={[[21.5, 89.0], [29.5, 97.5]]}
+        maxBoundsViscosity={1.0}
+        minZoom={6}
       >
         <MapResizer />
+        <MapEffect selectedState={selectedState} />
         <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="Dark (OSM)">
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            />
+
+          <LayersControl.BaseLayer checked name="Clean Map (Auto Labels)">
+            <>
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+              />
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png"
+                minZoom={8}
+                pane="markerPane"
+              />
+            </>
           </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Street (OSM)">
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="Terrain">
-            <TileLayer
-              url="https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
-              attribution='&copy; OpenStreetMap contributors, SRTM | &copy; OpenTopoMap'
-            />
+          <LayersControl.BaseLayer name="Satellite (Auto Labels)">
+            <>
+              <TileLayer
+                url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+              />
+              <TileLayer
+                url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
+                minZoom={8}
+                pane="markerPane"
+              />
+            </>
           </LayersControl.BaseLayer>
         </LayersControl>
 
@@ -89,11 +124,60 @@ export default function RiskMap({
               center={z.center}
               radius={z.radius}
               pathOptions={zoneStyle(z.riskScore)}
-              eventHandlers={{ click: () => setSelected(z) }}
+              eventHandlers={{
+                mouseover: (e) => {
+                  e.target.setStyle({ weight: 3, fillOpacity: Math.min(1, zoneStyle(z.riskScore).fillOpacity + 0.2) });
+                },
+                mouseout: (e) => {
+                  e.target.setStyle(zoneStyle(z.riskScore));
+                }
+              }}
             >
               <Tooltip direction="top" opacity={1}>
-                <b>{z.district}</b> — {z.riskScore}% ({z.status})
+                <b>{z.district}</b> — Click for Risk Prediction
               </Tooltip>
+              <Popup className="custom-popup" closeButton={false}>
+                <div className="pop-header">
+                  <div className="pop-title">Risk Prediction</div>
+                  <div className="pop-loc">{z.district}, {z.state}</div>
+                </div>
+                <div className="pop-score-row">
+                  <div className="pop-score" style={{ color: bandForScore(z.riskScore).color }}>
+                    {z.riskScore}%
+                  </div>
+                  <StatusPill status={z.status} />
+                </div>
+                <div className="pop-summary">
+                  {z.status === 'CRITICAL' ? 'High probability of slope failure within the prediction window.' :
+                   z.status === 'HIGH' ? 'Elevated slope instability and saturated soil. Monitor closely.' :
+                   'Risk levels are currently manageable but subject to change.'}
+                </div>
+                
+                <div className="pop-factors">
+                  <div className="pop-factor-title">Risk Factors</div>
+                  <div className="pop-factor-row">
+                    <span>Heavy Rainfall</span>
+                    <b>{z.rainfall > 120 ? 'High' : z.rainfall > 80 ? 'Moderate' : 'Low'}</b>
+                  </div>
+                  <div className="pop-factor-row">
+                    <span>Soil Moisture</span>
+                    <b>{z.soilMoisture > 80 ? 'Very High' : z.soilMoisture > 60 ? 'High' : 'Moderate'}</b>
+                  </div>
+                  <div className="pop-factor-row">
+                    <span>Slope</span>
+                    <b>{z.slope}°</b>
+                  </div>
+                  <div className="pop-factor-row">
+                    <span>Terrain Stability</span>
+                    <b>{z.riskScore > 75 ? 'Low' : z.riskScore > 50 ? 'Moderate' : 'High'}</b>
+                  </div>
+                </div>
+
+                <div className="pop-window">
+                  Prediction Window
+                  <b>{z.predictionWindow}</b>
+                </div>
+              </Popup>
             </Circle>
           ))}
 
@@ -155,63 +239,7 @@ export default function RiskMap({
         ))}
       </div>
 
-      {/* Zone info panel */}
-      {selected && (
-        <div className="zone-panel fade-up">
-          <div className="zone-panel-head">
-            <div>
-              <h4>{selected.district} District</h4>
-              <span className="z-state">{selected.state}</span>
-            </div>
-            <button className="icon-btn" style={{ width: 28, height: 28 }} onClick={() => setSelected(null)}>
-              <Icon name="close" size={15} />
-            </button>
-          </div>
 
-          <div className="zone-score-row">
-            <div>
-              <div className="eyebrow">Risk Score</div>
-              <div className="zone-score" style={{ color: bandForScore(selected.riskScore).color }}>
-                {selected.riskScore}%
-              </div>
-            </div>
-            <StatusPill status={selected.status} />
-          </div>
-
-          <div className="zone-metrics">
-            <div className="zone-metric">
-              <span className="zm-label">Rainfall (24h)</span>
-              <span className="zm-value">{selected.rainfall} mm</span>
-            </div>
-            <div className="zone-metric">
-              <span className="zm-label">Soil Moisture</span>
-              <span className="zm-value">{selected.soilMoisture}%</span>
-            </div>
-            <div className="zone-metric">
-              <span className="zm-label">Slope</span>
-              <span className="zm-value">{selected.slope}°</span>
-            </div>
-            <div className="zone-metric">
-              <span className="zm-label">Elevation</span>
-              <span className="zm-value">{selected.elevation.toLocaleString()} m</span>
-            </div>
-          </div>
-
-          <div className="zone-window">
-            Prediction Window
-            <b>{selected.predictionWindow}</b>
-          </div>
-
-          <div className="zone-panel-foot">
-            <button
-              className="btn btn--primary btn--block"
-              onClick={() => onViewAnalysis?.(selected)}
-            >
-              <Icon name="trend" size={15} /> View Risk Analysis
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

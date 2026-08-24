@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RiskCard from '../components/RiskCard';
 import RiskMap from '../components/RiskMap';
-import RiskAnalysis from '../components/RiskAnalysis';
 import WeatherPanel from '../components/WeatherPanel';
 import AlertPanel from '../components/AlertPanel';
 import RoadStatus from '../components/RoadStatus';
@@ -30,9 +29,8 @@ const KPI_META = [
   { key: 'roadsAffected', label: 'Roads Affected', icon: 'road', band: 'HIGH' },
 ];
 
-export default function Dashboard() {
+export default function Dashboard({ selectedState }) {
   const navigate = useNavigate();
-  const analysisRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
 
@@ -62,9 +60,6 @@ export default function Dashboard() {
     };
   }, []);
 
-  // "View Risk Analysis" from a map zone scrolls to the AI panel.
-  const focusAnalysis = () => analysisRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
   if (loading || !data) {
     return (
       <div className="page">
@@ -73,9 +68,8 @@ export default function Dashboard() {
             <KpiSkeleton key={k.key} />
           ))}
         </div>
-        <div className="dash-grid">
-          <PanelSkeleton bodyHeight={560} />
-          <PanelSkeleton bodyHeight={560} />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <PanelSkeleton bodyHeight={700} />
         </div>
         <div className="grid-2">
           <PanelSkeleton bodyHeight={300} />
@@ -111,8 +105,8 @@ export default function Dashboard() {
         })}
       </div>
 
-      {/* Primary focal row: GIS Map + AI Prediction */}
-      <div className="dash-grid">
+      {/* Primary focal row: GIS Map */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         <section className="panel map-panel panel--focus">
           <div className="panel-header">
             <div>
@@ -126,17 +120,13 @@ export default function Dashboard() {
             </span>
           </div>
           <RiskMap
-            fill
             zones={data.zones}
             incidents={data.incidents}
             infrastructure={data.infrastructure}
-            onViewAnalysis={focusAnalysis}
+            height={700}
+            selectedState={selectedState}
           />
         </section>
-
-        <div className="dash-col" ref={analysisRef}>
-          <RiskAnalysis className="panel--focus" prediction={data.prediction} />
-        </div>
       </div>
 
       {/* Warnings + Response priorities */}

@@ -9,7 +9,7 @@ import {
   WEATHER,
 } from '../data/mockData';
 
-export default function RiskMapPage() {
+export default function RiskMapPage({ selectedState }) {
   return (
     <div className="page">
       <div className="page-head">
@@ -37,6 +37,7 @@ export default function RiskMapPage() {
             zones={RISK_ZONES}
             incidents={INCIDENT_MARKERS}
             infrastructure={INFRASTRUCTURE}
+            selectedState={selectedState}
           />
         </section>
 

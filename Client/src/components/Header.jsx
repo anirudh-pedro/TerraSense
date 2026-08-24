@@ -112,14 +112,6 @@ export default function Header({ selectedState, onSelectState, onMenu, onReportI
           )}
         </div>
 
-        {/* Administrator profile */}
-        <div className="profile">
-          <div className="avatar">AD</div>
-          <div className="profile-text">
-            <b>Administrator</b>
-            <span>MDoNER · NER Ops</span>
-          </div>
-        </div>
       </div>
     </header>
   );

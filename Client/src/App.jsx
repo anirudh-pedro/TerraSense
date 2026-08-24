@@ -43,8 +43,8 @@ export default function App() {
           />
 
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/risk-map" element={<RiskMapPage />} />
+            <Route path="/" element={<Dashboard selectedState={selectedState} />} />
+            <Route path="/risk-map" element={<RiskMapPage selectedState={selectedState} />} />
             <Route path="/alerts" element={<Alerts />} />
             <Route path="/incidents" element={<Incidents onReportIncident={openReport} />} />
             <Route path="/emergency" element={<EmergencyResponse />} />
