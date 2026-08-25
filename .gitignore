@@ -24,6 +24,11 @@ env/
 .coverage
 htmlcov/
 
+# --- Data science / notebooks (Prediction models) ---
+.ipynb_checkpoints/
+# Model binaries are committed intentionally (small, required at runtime):
+#   Server/app/ml/*.joblib  and  Prediction_model/*.joblib
+
 # --- Node / frontend (Client) ---
 node_modules/
 dist/
