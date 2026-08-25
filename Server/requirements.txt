@@ -13,9 +13,13 @@ alembic>=1.13,<2.0
 GeoAlchemy2>=0.15,<1.0
 psycopg2-binary>=2.9,<3.0
 
-# --- AI Risk Prediction (Model 2: XGBoost + rule fusion + SHAP) ---
+# --- AI Risk Prediction (Model 1 susceptibility + Model 2 dynamic risk) ---
 numpy>=1.26,<2.3
 pandas>=2.0,<3.0
 xgboost>=2.0,<3.0
 shap>=0.44,<1.0
 joblib>=1.3,<2.0
+scikit-learn>=1.3,<2.0  # pulled by shap; used by the classification pipeline
+
+# --- Testing ---
+pytest>=8.0,<9.0
