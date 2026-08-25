@@ -1,0 +1,49 @@
+# ============================================================================
+# TerraSense NER — repository-wide ignore rules
+# (Client/ and Server/ also have their own .gitignore files.)
+# ============================================================================
+
+# --- Environment / secrets (NEVER commit real credentials) ---
+.env
+.env.*
+!.env.example
+*.local
+
+# --- Python (Server) ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Node / frontend (Client) ---
+node_modules/
+dist/
+dist-ssr/
+.vite/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Editors / OS ---
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+ehthumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

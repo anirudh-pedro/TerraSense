@@ -16,7 +16,6 @@ import {
   INCIDENT_MARKERS,
   INFRASTRUCTURE,
   AI_PREDICTION,
-  WEATHER,
   ALERTS,
   ROAD_SUMMARY,
   CRITICAL_ROADS,
@@ -52,7 +51,6 @@ export const getRiskZones = () => resolve(RISK_ZONES);
 export const getIncidentMarkers = () => resolve(INCIDENT_MARKERS);
 export const getInfrastructure = () => resolve(INFRASTRUCTURE);
 export const getAiPrediction = () => resolve(AI_PREDICTION);
-export const getWeather = () => resolve(WEATHER);
 export const getAlerts = () => resolve(ALERTS);
 export const getRoadSummary = () => resolve(ROAD_SUMMARY);
 export const getCriticalRoads = () => resolve(CRITICAL_ROADS);
@@ -60,6 +58,25 @@ export const getEmergencyPriorities = () => resolve(EMERGENCY_PRIORITIES);
 export const getIncidentReports = () => resolve(INCIDENT_REPORTS);
 export const getNotifications = () => resolve(NOTIFICATIONS);
 export const getSystemStatus = () => resolve(SYSTEM_STATUS);
+
+// --- Live endpoints (backed by the FastAPI server) --------------------------
+// Weather is served by the backend, which calls OpenWeatherMap server-side so
+// the provider API key is never exposed to the browser.
+export async function getWeather(district) {
+  const qs = district ? `?district=${encodeURIComponent(district)}` : '';
+  const res = await fetch(`${BASE_URL}/weather${qs}`, { headers: { Accept: 'application/json' } });
+  if (!res.ok) {
+    let message = `Weather request failed (${res.status})`;
+    try {
+      const body = await res.json();
+      message = body?.error?.message || body?.detail || message;
+    } catch {
+      /* non-JSON error body — keep the default message */
+    }
+    throw new Error(message);
+  }
+  return res.json();
+}
 
 // --- Write endpoints ---------------------------------------------------------
 // Simulates POST /incidents. Returns the created record with a server status.

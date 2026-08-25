@@ -1,6 +1,6 @@
 import AlertPanel from '../components/AlertPanel';
 import WeatherPanel from '../components/WeatherPanel';
-import { ALERTS, WEATHER } from '../data/mockData';
+import { ALERTS } from '../data/mockData';
 
 export default function Alerts() {
   return (
@@ -25,7 +25,7 @@ export default function Alerts() {
       <div className="grid-2">
         <AlertPanel alerts={ALERTS} showViewAll={false} />
         <div className="dash-col">
-          <WeatherPanel weather={WEATHER} />
+          <WeatherPanel district="Aizawl" />
         </div>
       </div>
     </div>

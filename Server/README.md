@@ -93,3 +93,69 @@ curl http://localhost:8000/api/kpis/summary
 curl http://localhost:8000/api/risk-zones
 curl "http://localhost:8000/api/risk-zones?state=Mizoram"
 ```
+
+---
+
+## Database (Phase 1 — Neon PostgreSQL + PostGIS)
+
+Persistence layer built with **SQLAlchemy 2.0 + GeoAlchemy2 + Alembic** on
+**Neon PostgreSQL** with the **PostGIS** extension. Coordinates and GIS entities
+use PostGIS `geometry` (SRID 4326 / WGS84).
+
+### Layout
+
+```
+app/db/
+├── base.py       # DeclarativeBase, naming convention, TimestampMixin
+├── session.py    # lazy engine, session factory, get_db() FastAPI dependency
+├── models.py     # 14 ORM models (geometry, FKs, indexes, relationships)
+├── init_db.py    # dev bootstrap: CREATE EXTENSION postgis + create_all
+└── seed.py       # realistic NER demo data (idempotent, --reset supported)
+migrations/       # Alembic (env.py, versions/0001_initial_schema.py)
+alembic.ini
+```
+
+### Tables
+
+`users`, `districts`, `risk_zones`, `weather_data`, `terrain_data`,
+`soil_moisture`, `landslide_history`, `ai_predictions`, `alerts`, `incidents`,
+`roads`, `infrastructure`, `emergency_priorities`, `notifications`.
+
+Risk `status` (`LOW | MODERATE | HIGH | CRITICAL`) is derived from `risk_score`
+via `app/services/risk.py` — never hardcoded.
+
+### Configure
+
+Set the Neon connection string in `.env` (psycopg2 driver, SSL required):
+
+```
+DATABASE_URL=postgresql+psycopg2://<user>:<password>@<host>.neon.tech/<db>?sslmode=require
+```
+
+### Migrate & seed
+
+```powershell
+# Apply migrations (creates PostGIS extension, all tables, indexes, FKs)
+python -m alembic upgrade head
+
+# Load demo data (idempotent; use --reset to wipe & reseed)
+python -m app.db.seed
+python -m app.db.seed --reset
+```
+
+Common Alembic commands:
+
+```powershell
+python -m alembic current                              # show applied revision
+python -m alembic history                              # list migrations
+python -m alembic revision --autogenerate -m "message" # create next migration
+python -m alembic downgrade -1                          # roll back one revision
+```
+
+> Quick dev alternative (no versioning): `python -m app.db.init_db` enables
+> PostGIS and creates all tables directly from the models. Alembic is the
+> source of truth for production.
+
+> Note: on Windows PowerShell, Alembic/seed log to **stderr**, so PowerShell may
+> report a non-zero exit code even on success. Verify with `alembic current`
+> or a DB query.

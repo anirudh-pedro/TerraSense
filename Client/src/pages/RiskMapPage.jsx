@@ -6,7 +6,6 @@ import {
   INCIDENT_MARKERS,
   INFRASTRUCTURE,
   AI_PREDICTION,
-  WEATHER,
 } from '../data/mockData';
 
 export default function RiskMapPage() {
@@ -42,7 +41,7 @@ export default function RiskMapPage() {
 
         <div className="dash-col">
           <RiskAnalysis className="panel--focus" prediction={AI_PREDICTION} />
-          <WeatherPanel weather={WEATHER} />
+          <WeatherPanel district="Aizawl" />
         </div>
       </div>
     </div>

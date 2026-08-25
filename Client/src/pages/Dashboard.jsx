@@ -15,7 +15,6 @@ import {
   getIncidentMarkers,
   getInfrastructure,
   getAiPrediction,
-  getWeather,
   getAlerts,
   getRoadSummary,
   getCriticalRoads,
@@ -44,16 +43,15 @@ export default function Dashboard() {
       getIncidentMarkers(),
       getInfrastructure(),
       getAiPrediction(),
-      getWeather(),
       getAlerts(),
       getRoadSummary(),
       getCriticalRoads(),
       getEmergencyPriorities(),
       getIncidentReports(),
     ]).then(
-      ([kpis, zones, incidents, infrastructure, prediction, weather, alerts, roadSummary, roads, priorities, reports]) => {
+      ([kpis, zones, incidents, infrastructure, prediction, alerts, roadSummary, roads, priorities, reports]) => {
         if (!alive) return;
-        setData({ kpis, zones, incidents, infrastructure, prediction, weather, alerts, roadSummary, roads, priorities, reports });
+        setData({ kpis, zones, incidents, infrastructure, prediction, alerts, roadSummary, roads, priorities, reports });
         setLoading(false);
       }
     );
@@ -64,6 +62,11 @@ export default function Dashboard() {
 
   // "View Risk Analysis" from a map zone scrolls to the AI panel.
   const focusAnalysis = () => analysisRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Weather is shown for the highest-risk district (dynamic, data-driven).
+  const focusDistrict = data
+    ? (data.zones.slice().sort((a, b) => b.riskScore - a.riskScore)[0]?.district ?? 'Aizawl')
+    : 'Aizawl';
 
   if (loading || !data) {
     return (
@@ -147,7 +150,7 @@ export default function Dashboard() {
 
       {/* Weather + Road connectivity */}
       <div className="grid-2">
-        <WeatherPanel weather={data.weather} />
+        <WeatherPanel district={focusDistrict} />
         <RoadStatus summary={data.roadSummary} roads={data.roads} limit={4} onViewOnMap={() => navigate('/risk-map')} />
       </div>
 

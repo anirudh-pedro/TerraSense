@@ -5,9 +5,10 @@ singleton via :func:`get_settings` (cached) so the `.env` file is parsed once.
 """
 
 from functools import lru_cache
+from typing import Annotated
 
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -37,7 +38,29 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # --- CORS ---
-    backend_cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    # NoDecode: keep pydantic-settings from JSON-parsing the env value so the
+    # validator below can accept a plain comma-separated string.
+    backend_cors_origins: Annotated[list[str], NoDecode] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+    # --- Database (Neon PostgreSQL + PostGIS) ---
+    # SQLAlchemy URL, e.g. postgresql+psycopg2://user:pass@host/db?sslmode=require
+    database_url: str = ""
+    db_echo: bool = False  # log SQL statements
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
+    db_pool_pre_ping: bool = True
+
+    # --- Weather (OpenWeatherMap) ---
+    # The API key stays server-side ONLY. Set it in Server/.env, never in the frontend.
+    openweather_api_key: str = ""
+    openweather_base_url: str = "https://api.openweathermap.org/data/2.5"
+    weather_units: str = "metric"  # metric -> °C, m/s (wind converted to km/h)
+    weather_cache_ttl_seconds: int = 300  # cache upstream responses to respect rate limits
+    weather_timeout_seconds: float = 10.0
+    weather_default_district: str = "Aizawl"
 
     @field_validator("backend_cors_origins", mode="before")
     @classmethod
