@@ -1,0 +1,44 @@
+name: terrasense
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Foreground service - keeps app alive in background
+  flutter_foreground_task: ^8.15.0
+
+  # WebSocket
+  web_socket_channel: ^3.0.0
+
+  # Location / GPS
+  geolocator: ^13.0.0
+
+  # Loud audio alert
+  just_audio: ^0.9.42
+
+  # Wake lock - keeps screen on during alert
+  wakelock_plus: ^1.2.8
+
+  # Local notifications
+  flutter_local_notifications: ^18.0.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/sounds/alert.mp3
